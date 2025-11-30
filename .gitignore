@@ -1,0 +1,16 @@
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+.env
+*.log
+build/
+dist/
+*.spec
+node_modules/
+.DS_Store
+Thumbs.db
+venv/
+*.exe
+dist/
+build/
