@@ -1,0 +1,71 @@
+import os
+
+block_cipher = None
+
+a = Analysis(
+    ['app_launcher.py'],
+    pathex=[],
+    binaries=[],
+    datas=[
+        ('manage.py', '.'),
+        ('foodplanner', 'foodplanner'),
+        ('recipes', 'recipes'),
+        ('db.sqlite3', '.'),
+        ('media', 'media'),
+        ('media/step_photos', 'step_photos'),
+        ('recipe_scraper.py', '.'),
+    ],
+    hiddenimports=[
+        'django',
+        'django.contrib.admin',
+        'django.contrib.auth', 
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'recipes.models',
+        'recipes.views',
+        'recipes.urls',
+        'recipes.forms',
+        'recipes.apps',
+        'foodplanner.settings',
+        'foodplanner.urls',
+        'foodplanner.wsgi',
+        'jaraco',
+        'jaraco.functools',
+        'jaraco.context',
+        'jaraco.text',
+    ],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='FoodPlanner',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)

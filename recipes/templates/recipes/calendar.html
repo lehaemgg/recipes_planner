@@ -1,0 +1,305 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}Calendar - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <div class="row">
+                    <div class="col s2">
+                        <a href="?week={{ prev_week }}" class="btn-floating teal">
+                            <i class="material-icons">chevron_left</i>
+                        </a>
+                    </div>
+                    <div class="col s8 center-align">
+                        <h5>{{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}</h5>
+                    </div>
+                    <div class="col s2 right-align">
+                        <a href="?week={{ next_week }}" class="btn-floating teal">
+                            <i class="material-icons">chevron_right</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: flex; border: 1px solid #e0e0e0;">
+    {% for day in week_days %}
+    <div style="flex: 1; border-right: 1px solid #e0e0e0; min-height: {% if day.meal_plans|length > 2 %}600px{% elif day.meal_plans|length > 1 %}450px{% else %}300px{% endif %}; display: flex; flex-direction: column; {% if day.is_past %}background-color: #f5f5f5;{% elif day.is_today %}background-color: #e8f5e8;{% endif %}">
+        <div style="padding: 15px 10px 10px 10px; border-bottom: 1px solid #e0e0e0; text-align: center; background: white;">
+            <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 2px;">{{ day.date|date:"d" }}</div>
+            <div style="font-size: 0.9em; color: #666;">{{ day.day_name }}</div>
+        </div>
+        <div style="padding: 8px; flex: 1; display: flex; flex-direction: column;">
+            <div style="flex: 1; overflow-y: auto;">
+                {% for meal_plan in day.meal_plans %}
+                <div class="card" style="margin: 6px 0; padding: 0; position: relative;">
+                    <div style="position: absolute; top: 8px; left: 8px; z-index: 1;">
+                        {% if meal_plan.status == 'planned' %}
+                        <span style="background: #4caf50; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75em; display: flex; align-items: center; gap: 2px;">
+                            <i class="material-icons" style="font-size: 12px;">event</i>Planned
+                        </span>
+                        {% elif meal_plan.status == 'added_to_list' %}
+                        <span style="background: #ff9800; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75em; display: flex; align-items: center; gap: 2px;">
+                            <i class="material-icons" style="font-size: 12px;">playlist_add</i>Added to List
+                        </span>
+                        {% elif meal_plan.status == 'in_shopping' %}
+                        <span style="background: #2196f3; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75em; display: flex; align-items: center; gap: 2px;">
+                            <i class="material-icons" style="font-size: 12px;">shopping_cart</i>In Shopping
+                        </span>
+                        {% elif meal_plan.status == 'shopped' %}
+                        <span style="background: #9e9e9e; color: white; padding: 2px 6px; border-radius: 12px; font-size: 0.75em; display: flex; align-items: center; gap: 2px;">
+                            <i class="material-icons" style="font-size: 12px;">check_circle</i>Shopped
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-content" style="padding: 10px; padding-top: 30px;">
+                        <div style="font-size: 1em; font-weight: 500; line-height: 1.2; margin-bottom: 8px;">{{ meal_plan.recipe.title }}</div>
+                        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+                            <button class="btn-floating btn-small teal portions-decrease" data-meal-plan-id="{{ meal_plan.pk }}" style="margin-right: 6px;" {% if meal_plan.status != 'planned' %}disabled{% endif %}>
+                                <i class="material-icons">remove</i>
+                            </button>
+                            <span class="portions-display" style="margin: 0 6px; font-weight: 500;">{{ meal_plan.portions }}</span>
+                            <button class="btn-floating btn-small teal portions-increase" data-meal-plan-id="{{ meal_plan.pk }}" style="margin-left: 6px;" {% if meal_plan.status != 'planned' %}disabled{% endif %}>
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-action" style="padding: 8px 12px; display: flex; justify-content: space-around;">
+                        <a href="{% url 'meal_plan_detail' meal_plan.pk %}" class="btn-floating btn-small teal" title="View">
+                            <i class="material-icons">visibility</i>
+                        </a>
+                        {% if meal_plan.status == 'planned' %}
+                        <a href="#" class="btn-floating btn-small green add-to-shopping-btn" data-meal-plan-id="{{ meal_plan.pk }}" title="Add to Shopping List">
+                            <i class="material-icons">playlist_add</i>
+                        </a>
+                        {% elif meal_plan.status == 'added_to_list' %}
+                        <a href="#" class="btn-floating btn-small orange remove-from-shopping-btn" data-meal-plan-id="{{ meal_plan.pk }}" title="Remove from Shopping List">
+                            <i class="material-icons">playlist_remove</i>
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn-floating btn-small grey" title="In Shopping/Shopped" style="pointer-events: none;">
+                            <i class="material-icons">playlist_add</i>
+                        </a>
+                        {% endif %}
+                        {% if meal_plan.status == 'in_shopping' %}
+                        <a href="#" class="btn-floating btn-small grey" title="Cannot delete while shopping" style="pointer-events: none;">
+                            <i class="material-icons">delete</i>
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn-floating btn-small red remove-meal-btn" data-meal-plan-id="{{ meal_plan.pk }}" title="Remove Recipe">
+                            <i class="material-icons">delete</i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if not day.is_past %}
+            <button class="btn-small teal add-recipe-btn" 
+                   data-date="{{ day.date|date:'Y-m-d' }}" 
+                   style="width: 100%; margin-top: auto;">
+                <i class="material-icons left">add</i>Add Recipe
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal for adding recipe -->
+<div id="add-recipe-modal" class="modal" style="z-index: 1003;">
+    <div class="modal-content">
+        <h4>Add Recipe to Day</h4>
+        <div class="row">
+            <div class="input-field col s12">
+                <select id="recipe-select">
+                    <option value="" disabled selected>Choose a recipe</option>
+                    {% for recipe in recipes %}
+                    <option value="{{ recipe.pk }}">{{ recipe.title }}</option>
+                    {% endfor %}
+                </select>
+                <label>Recipe</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12">
+                <input type="number" id="portions" value="1" min="1">
+                <label for="portions">Number of Portions</label>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="waves-effect btn-flat" id="cancel-meal-plan">Cancel</button>
+        <a href="#!" class="waves-effect btn teal" id="save-meal-plan">Save</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = M.Modal.init(document.getElementById('add-recipe-modal'));
+    var selectedDate = '';
+    
+    M.FormSelect.init(document.getElementById('recipe-select'));
+    
+    document.querySelectorAll('.add-recipe-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectedDate = this.dataset.date;
+            modal.open();
+        });
+    });
+    
+    document.getElementById('cancel-meal-plan').addEventListener('click', function() {
+        modal.close();
+    });
+    
+    document.getElementById('save-meal-plan').addEventListener('click', function() {
+        const recipeId = document.getElementById('recipe-select').value;
+        const portions = document.getElementById('portions').value;
+        
+        if (!recipeId) {
+            alert('Please select a recipe');
+            return;
+        }
+        
+        fetch('/add-meal-plan/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `recipe_id=${recipeId}&date=${selectedDate}&portions=${portions}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modal.close();
+                location.reload();
+            } else {
+                alert('Error adding meal plan');
+            }
+        });
+    });
+    
+    // Handle portions increase/decrease
+    function updatePortions(mealPlanId, change) {
+        const display = document.querySelector(`[data-meal-plan-id="${mealPlanId}"]`).closest('.card').querySelector('.portions-display');
+        const currentPortions = parseInt(display.textContent);
+        const newPortions = Math.max(1, currentPortions + change);
+        
+        fetch('/update-meal-plan-portions/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `meal_plan_id=${mealPlanId}&portions=${newPortions}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                display.textContent = newPortions;
+            } else {
+                alert('Error updating portions');
+            }
+        });
+    }
+    
+    document.querySelectorAll('.portions-increase').forEach(btn => {
+        btn.addEventListener('click', function() {
+            updatePortions(this.dataset.mealPlanId, 1);
+        });
+    });
+    
+    document.querySelectorAll('.portions-decrease').forEach(btn => {
+        btn.addEventListener('click', function() {
+            updatePortions(this.dataset.mealPlanId, -1);
+        });
+    });
+    
+    // Handle meal plan removal
+    document.querySelectorAll('.remove-meal-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const mealPlanId = this.dataset.mealPlanId;
+            
+            if (confirm('Remove this recipe from the day?')) {
+                fetch('/remove-meal-plan/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `meal_plan_id=${mealPlanId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error removing meal plan');
+                    }
+                });
+            }
+        });
+    });
+    
+    // Handle shopping list actions with event delegation
+    document.addEventListener('click', function(e) {
+        const addBtn = e.target.classList.contains('add-to-shopping-btn') ? e.target : e.target.closest('.add-to-shopping-btn');
+        const removeBtn = e.target.classList.contains('remove-from-shopping-btn') ? e.target : e.target.closest('.remove-from-shopping-btn');
+        
+        if (addBtn) {
+            e.preventDefault();
+            const mealPlanId = addBtn.dataset.mealPlanId;
+            
+            fetch('/add-to-shopping-list/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `meal_plan_id=${mealPlanId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error adding to shopping list');
+                }
+            });
+        }
+        
+        if (removeBtn) {
+            e.preventDefault();
+            const mealPlanId = removeBtn.dataset.mealPlanId;
+            
+            fetch('/remove-from-shopping-list/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `meal_plan_id=${mealPlanId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing from shopping list');
+                }
+            });
+        }
+    });
+});
+</script>
+
+{% csrf_token %}
+{% endblock %}

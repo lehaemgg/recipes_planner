@@ -1,0 +1,164 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}Shopping - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>Shopping</h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                {% if items %}
+                {% csrf_token %}
+                <table class="striped">
+                    <thead>
+                        <tr>
+                            <th>Got it</th>
+                            <th>Item</th>
+                            <th class="right-align">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="shopping-item" data-item-id="{{ item.pk }}" {% if item.is_purchased %}style="background-color: #f5f5f5; color: #999; text-decoration: line-through;"{% endif %}>
+                            <td>
+                                <label>
+                                    <input type="checkbox" class="shopping-checkbox" {% if item.is_purchased %}checked{% endif %}>
+                                    <span></span>
+                                </label>
+                            </td>
+                            <td>{{ item.name }}</td>
+                            <td class="right-align" style="font-size: 1.2em; font-weight: bold;">{{ item.amount|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="center-align" style="margin-top: 30px;">
+                    <button class="btn-large orange" id="back-to-list-btn" style="margin-right: 10px;">
+                        <i class="material-icons left">arrow_back</i>Back to List
+                    </button>
+                    <button class="btn-large green" id="finish-shopping-btn">
+                        <i class="material-icons left">check</i>Finish Shopping
+                    </button>
+                </div>
+                
+                <script>
+                // Handle shopping item checkboxes
+                document.querySelectorAll('.shopping-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const itemId = this.closest('.shopping-item').dataset.itemId;
+                        
+                        fetch('/toggle-shopping-item/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            },
+                            body: `item_id=${itemId}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const row = this.closest('.shopping-item');
+                                if (this.checked) {
+                                    row.style.backgroundColor = '#f5f5f5';
+                                    row.style.color = '#999';
+                                    row.style.textDecoration = 'line-through';
+                                } else {
+                                    row.style.backgroundColor = '';
+                                    row.style.color = '';
+                                    row.style.textDecoration = '';
+                                }
+                            }
+                        });
+                    });
+                });
+                
+                // Finish shopping
+                document.getElementById('finish-shopping-btn').addEventListener('click', function() {
+                    fetch('/finish-shopping/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.all_purchased) {
+                                alert('Shopping completed! All items moved to history.');
+                                window.location.href = '/shopping-list/';
+                            } else {
+                                if (confirm(`${data.unpurchased_count} items not purchased. Add them back to shopping list?`)) {
+                                    fetch('/handle-unpurchased/', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                        },
+                                        body: 'action=return'
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            alert('Unpurchased items added back to shopping list.');
+                                            window.location.href = '/shopping-list/';
+                                        }
+                                    });
+                                } else {
+                                    fetch('/handle-unpurchased/', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                        },
+                                        body: 'action=discard'
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            alert('Shopping completed.');
+                                            window.location.href = '/shopping-list/';
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Back to list
+                document.getElementById('back-to-list-btn').addEventListener('click', function() {
+                    fetch('/back-to-list/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/shopping-list/';
+                        }
+                    });
+                });
+                </script>
+                {% else %}
+                <div class="center-align">
+                    <h5 class="grey-text">No items to shop</h5>
+                    <a href="/shopping-list/" class="btn teal">Back to Shopping List</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

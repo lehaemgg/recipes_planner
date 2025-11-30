@@ -1,0 +1,87 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}{{ recipe.title }} - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>{{ recipe.title }}
+            {% if recipe.source_url %}
+            <span class="new badge teal" data-badge-caption="Imported"></span>
+            {% endif %}
+        </h4>
+        {% if recipe.source_url %}
+        <p><a href="{{ recipe.source_url }}" target="_blank" class="btn-flat teal-text">
+            <i class="material-icons left">link</i>View Original Recipe
+        </a></p>
+        {% endif %}
+        <div class="right hide-on-small-only">
+            <a href="{% url 'recipe_edit' recipe.pk %}" class="btn teal">
+                <i class="material-icons left">edit</i>Edit
+            </a>
+            <a href="{% url 'recipe_delete' recipe.pk %}" class="btn red">
+                <i class="material-icons left">delete</i>Delete
+            </a>
+        </div>
+        <div class="hide-on-med-and-up" style="margin-top: 10px;">
+            <a href="{% url 'recipe_edit' recipe.pk %}" class="btn-small teal">
+                <i class="material-icons left">edit</i>Edit
+            </a>
+            <a href="{% url 'recipe_delete' recipe.pk %}" class="btn-small red">
+                <i class="material-icons left">delete</i>Delete
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12 l6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Ingredients</span>
+                {% if recipe.ingredients.all %}
+                <ul class="collection">
+                    {% for ingredient in recipe.ingredients.all %}
+                    <li class="collection-item">
+                        <span class="badge">{{ ingredient.quantity }} {{ ingredient.unit }}</span>
+                        {{ ingredient.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="grey-text">No ingredients added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 l6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Steps</span>
+                {% if recipe.steps.all %}
+                {% for step in recipe.steps.all %}
+                <div class="step-item" style="margin-bottom: 20px;">
+                    <h6>Step {{ step.order }}</h6>
+                    {% if step.photo %}
+                    <img src="{{ step.photo.url }}" alt="Step {{ step.order }}" class="responsive-img materialboxed step-photo" style="max-height: 200px; margin: 10px 0;">
+                    {% endif %}
+                    <p>{{ step.description }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="grey-text">No steps added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <a href="{% url 'recipe_list' %}" class="btn-flat">
+            <i class="material-icons left">arrow_back</i>Back to Recipes
+        </a>
+    </div>
+</div>
+{% endblock %}

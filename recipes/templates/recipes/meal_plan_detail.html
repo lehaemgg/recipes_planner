@@ -1,0 +1,73 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}{{ meal_plan.recipe.title }} - {{ meal_plan.date }} - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>{{ meal_plan.recipe.title }}
+            <span class="new badge teal" data-badge-caption="portions">{{ meal_plan.portions }}</span>
+        </h4>
+        <p class="grey-text">Planned for: {{ meal_plan.date|date:"F d, Y" }}</p>
+        {% if meal_plan.recipe.source_url %}
+        <p><a href="{{ meal_plan.recipe.source_url }}" target="_blank" class="btn-flat teal-text">
+            <i class="material-icons left">link</i>View Original Recipe
+        </a></p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12 l6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Ingredients ({{ meal_plan.portions }} portions)</span>
+                {% if ingredients_with_portions %}
+                <ul class="collection">
+                    {% for ingredient in ingredients_with_portions %}
+                    <li class="collection-item">
+                        <span class="badge">{{ ingredient.quantity }} {{ ingredient.unit }}</span>
+                        {{ ingredient.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="grey-text">No ingredients added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 l6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Steps</span>
+                {% if meal_plan.recipe.steps.all %}
+                {% for step in meal_plan.recipe.steps.all %}
+                <div class="step-item" style="margin-bottom: 20px;">
+                    <h6>Step {{ step.order }}</h6>
+                    {% if step.photo %}
+                    <img src="{{ step.photo.url }}" alt="Step {{ step.order }}" class="responsive-img materialboxed step-photo" style="max-height: 200px; margin: 10px 0;">
+                    {% endif %}
+                    <p>{{ step.description }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="grey-text">No steps added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <a href="{% url 'calendar' %}" class="btn-flat">
+            <i class="material-icons left">arrow_back</i>Back to Calendar
+        </a>
+        <a href="{% url 'recipe_detail' meal_plan.recipe.pk %}" class="btn teal">
+            <i class="material-icons left">restaurant</i>View Full Recipe
+        </a>
+    </div>
+</div>
+{% endblock %}

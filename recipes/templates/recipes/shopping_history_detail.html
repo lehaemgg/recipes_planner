@@ -1,0 +1,57 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}Shopping History Detail - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>Shopping History - {{ history.date|date:"M d, Y H:i" }}</h4>
+        <p>Status: 
+            {% if history.status == 'completed' %}
+                <span class="green-text">Completed</span>
+            {% elif history.status == 'returned' %}
+                <span class="orange-text">Returned to List</span>
+            {% else %}
+                <span class="red-text">Never Purchased</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <table class="striped">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="right-align">Amount</th>
+                            <th class="center-align">Purchased</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr {% if item.purchased %}style="background-color: #f5f5f5;"{% endif %}>
+                            <td>{{ item.name }}</td>
+                            <td class="right-align">{{ item.amount|default:"-" }}</td>
+                            <td class="center-align">
+                                {% if item.purchased %}
+                                    <i class="material-icons green-text">check</i>
+                                {% else %}
+                                    <i class="material-icons red-text">close</i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="center-align" style="margin-top: 20px;">
+                    <a href="/shopping-history/" class="btn teal">Back to History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

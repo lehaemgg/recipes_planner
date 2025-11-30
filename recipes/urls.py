@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.hello_world, name='home'),
+    path('login/', views.login_view, name='login'),
+    path('calendar/', views.calendar_view, name='calendar'),
+    path('recipes/', views.recipe_list, name='recipe_list'),
+    path('recipe/<int:pk>/', views.recipe_detail, name='recipe_detail'),
+    path('recipe/new/', views.recipe_create, name='recipe_create'),
+    path('recipe/<int:pk>/edit/', views.recipe_edit, name='recipe_edit'),
+    path('recipe/<int:pk>/delete/', views.recipe_delete, name='recipe_delete'),
+    path('import-recipe/', views.import_recipe, name='import_recipe'),
+    path('add-meal-plan/', views.add_meal_plan, name='add_meal_plan'),
+    path('update-meal-plan-portions/', views.update_meal_plan_portions, name='update_meal_plan_portions'),
+    path('remove-meal-plan/', views.remove_meal_plan, name='remove_meal_plan'),
+    path('meal-plan/<int:pk>/', views.meal_plan_detail, name='meal_plan_detail'),
+    path('shopping-list/', views.shopping_list_view, name='shopping_list'),
+    path('add-to-shopping-list/', views.add_to_shopping_list, name='add_to_shopping_list'),
+    path('remove-from-shopping-list/', views.remove_from_shopping_list, name='remove_from_shopping_list'),
+    path('add-custom-item/', views.add_custom_item, name='add_custom_item'),
+    path('toggle-custom-item/', views.toggle_custom_item, name='toggle_custom_item'),
+    path('delete-custom-item/', views.delete_custom_item, name='delete_custom_item'),
+    path('start-shopping/', views.start_shopping, name='start_shopping'),
+    path('shopping/', views.shopping_tab, name='shopping_tab'),
+    path('toggle-shopping-item/', views.toggle_shopping_item, name='toggle_shopping_item'),
+    path('finish-shopping/', views.finish_shopping, name='finish_shopping'),
+    path('handle-unpurchased/', views.handle_unpurchased, name='handle_unpurchased'),
+    path('shopping-history/', views.shopping_history, name='shopping_history'),
+    path('shopping-history/<int:pk>/', views.shopping_history_detail, name='shopping_history_detail'),
+    path('back-to-list/', views.back_to_list, name='back_to_list'),
+]

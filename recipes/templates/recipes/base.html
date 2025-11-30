@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Food Planner{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    
+    <style>
+        .mobile-fab { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .recipe-card { margin-bottom: 15px; }
+        .step-photo { max-width: 100%; height: auto; }
+        @media only screen and (max-width: 600px) {
+            .container { width: 95%; }
+            .brand-logo { font-size: 1.5rem !important; }
+            .card-content { padding: 16px !important; }
+        }
+        .main-content { margin-left: 0; transition: margin-left 0.3s; }
+        .sidenav-open .main-content { margin-left: 250px; }
+        @media only screen and (max-width: 992px) {
+            .sidenav-open .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="teal">
+        <div class="nav-wrapper container">
+            <a href="{% url 'calendar' %}" class="brand-logo">Food Planner</a>
+            <a href="#" data-target="side-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        </div>
+    </nav>
+    
+    <ul class="sidenav" id="side-nav" style="width: 250px;">
+        <li><div class="user-view teal">
+            <div class="background"></div>
+            <span class="white-text name">Food Planner</span>
+        </div></li>
+        <li><a href="{% url 'calendar' %}" class="{% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+            <i class="material-icons">calendar_today</i>Calendar
+        </a></li>
+        <li><a href="{% url 'recipe_list' %}" class="{% if 'recipe' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="material-icons">restaurant</i>Recipes
+        </a></li>
+        <li><a href="{% url 'shopping_list' %}" class="{% if request.resolver_match.url_name == 'shopping_list' %}active{% endif %}">
+            <i class="material-icons">shopping_cart</i>Shopping List
+        </a></li>
+        <li><a href="{% url 'shopping_tab' %}" class="{% if request.resolver_match.url_name == 'shopping_tab' %}active{% endif %}">
+            <i class="material-icons">shopping_basket</i>Shopping
+        </a></li>
+        <li><a href="{% url 'shopping_history' %}" class="{% if 'shopping_history' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="material-icons">history</i>Shopping History
+        </a></li>
+        <li><div class="divider"></div></li>
+        <li><a href="{% url 'recipe_create' %}">
+            <i class="material-icons">add</i>Add Recipe
+        </a></li>
+    </ul>
+
+    <main class="main-content" style="padding: 20px;">
+        <div class="hide-on-large-only" style="padding-top: 10px;"></div>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            M.AutoInit();
+            var elems = document.querySelectorAll('.sidenav');
+            var instances = M.Sidenav.init(elems, {
+                edge: 'left',
+                draggable: true,
+                onOpenStart: function() {
+                    document.body.classList.add('sidenav-open');
+                },
+                onCloseStart: function() {
+                    document.body.classList.remove('sidenav-open');
+                }
+            });
+            
+            // Auto-open on desktop
+            if (window.innerWidth > 992) {
+                instances[0].open();
+            }
+        });
+    </script>
+</body>
+</html>

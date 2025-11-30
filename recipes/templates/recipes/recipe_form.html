@@ -1,0 +1,334 @@
+{% extends 'recipes/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Recipe - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>{{ action }} Recipe</h4>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="recipe-form">
+    {% csrf_token %}
+    
+    <!-- Import Section -->
+    <div class="row">
+        <div class="col s12">
+            <div class="card-panel teal lighten-5">
+                <h6><i class="material-icons left">cloud_download</i>Import Recipe</h6>
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s12 m9">
+                        <input type="url" id="import-url" placeholder="https://menunedeli.ru/recipe/...">
+                        <label for="import-url">Recipe URL (menunedeli.ru)</label>
+                    </div>
+                    <div class="col s12 m3">
+                        <button type="button" id="import-btn" class="btn teal btn-block" style="margin-top: 15px; width: 100%;">
+                            <i class="material-icons left">import_export</i>Import
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="input-field col s12">
+            {{ form.title }}
+            <label for="{{ form.title.id_for_label }}">Recipe Title</label>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="input-field col s12">
+            {{ form.source_url }}
+            <label for="{{ form.source_url.id_for_label }}">Source URL</label>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <h5>Ingredients 
+                <a href="#!" id="add-ingredient" class="btn-floating btn-small teal right">
+                    <i class="material-icons">add</i>
+                </a>
+            </h5>
+            {{ ingredient_formset.management_form }}
+            <div id="ingredient-forms">
+                {% for form in ingredient_formset %}
+                <div class="ingredient-form card-panel" style="margin-bottom: 10px;">
+                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="input-field col s12 m4">
+                            {{ form.name }}
+                            <label for="{{ form.name.id_for_label }}">Ingredient Name</label>
+                        </div>
+                        <div class="input-field col s6 m2">
+                            {{ form.quantity }}
+                            <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+                        </div>
+                        <div class="input-field col s4 m2">
+                            {{ form.unit }}
+                            <label for="{{ form.unit.id_for_label }}">Unit</label>
+                        </div>
+                        <div class="col s2 m2 center-align" style="padding-top: 20px;">
+                            <label>
+                                {{ form.no_need_to_buy }}
+                                <span>No need to buy</span>
+                            </label>
+                        </div>
+                        <div class="col s12 m2 center-align">
+                            <a href="#!" class="btn-floating btn-small red remove-ingredient" style="margin-top: 15px;">
+                                <i class="material-icons">remove</i>
+                            </a>
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <h5>Steps 
+                <a href="#!" id="add-step" class="btn-floating btn-small teal right">
+                    <i class="material-icons">add</i>
+                </a>
+            </h5>
+            {{ step_formset.management_form }}
+            <div id="step-forms">
+                {% for form in step_formset %}
+                <div class="step-form card-panel" style="margin-bottom: 10px;">
+                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="input-field col s12 m7">
+                            {{ form.description }}
+                            <label for="{{ form.description.id_for_label }}">Step Description</label>
+                        </div>
+                        <div class="file-field input-field col s10 m3">
+                            <div class="btn teal">
+                                <span>Photo</span>
+                                {{ form.photo }}
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text" placeholder="Upload photo">
+                            </div>
+                        </div>
+                        <div class="col s2 center-align">
+                            <a href="#!" class="btn-floating btn-small red remove-step" style="margin-top: 15px;">
+                                <i class="material-icons">remove</i>
+                            </a>
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <button type="button" id="save-recipe" class="btn teal">
+                <i class="material-icons left">save</i>Save
+            </button>
+            <button type="button" id="save-and-close" class="btn green">
+                <i class="material-icons left">save</i>Save & Close
+            </button>
+            <a href="{% if recipe %}{% url 'recipe_detail' recipe.pk %}{% else %}{% url 'recipe_list' %}{% endif %}" class="btn-flat">
+                Cancel
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Empty form templates for JavaScript -->
+<div id="empty-ingredient-form" style="display: none;">
+    <div class="ingredient-form card-panel" style="margin-bottom: 10px;">
+        <div class="row" style="margin-bottom: 0;">
+            <div class="input-field col s12 m4">
+                <input type="text" name="ingredients-__prefix__-name" class="validate" id="id_ingredients-__prefix__-name">
+                <label for="id_ingredients-__prefix__-name">Ingredient Name</label>
+            </div>
+            <div class="input-field col s6 m2">
+                <input type="number" name="ingredients-__prefix__-quantity" step="0.01" class="validate" id="id_ingredients-__prefix__-quantity">
+                <label for="id_ingredients-__prefix__-quantity">Quantity</label>
+            </div>
+            <div class="input-field col s4 m2">
+                <input type="text" name="ingredients-__prefix__-unit" class="validate" id="id_ingredients-__prefix__-unit">
+                <label for="id_ingredients-__prefix__-unit">Unit</label>
+            </div>
+            <div class="col s2 m2 center-align" style="padding-top: 20px;">
+                <label>
+                    <input type="checkbox" name="ingredients-__prefix__-no_need_to_buy" id="id_ingredients-__prefix__-no_need_to_buy">
+                    <span>No need to buy</span>
+                </label>
+            </div>
+            <div class="col s12 m2 center-align">
+                <a href="#!" class="btn-floating btn-small red remove-ingredient" style="margin-top: 15px;">
+                    <i class="material-icons">remove</i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="empty-step-form" style="display: none;">
+    <div class="step-form card-panel" style="margin-bottom: 10px;">
+        <div class="row" style="margin-bottom: 0;">
+            <div class="input-field col s7">
+                <textarea name="steps-__prefix__-description" class="materialize-textarea" id="id_steps-__prefix__-description"></textarea>
+                <label for="id_steps-__prefix__-description">Step Description</label>
+            </div>
+            <div class="file-field input-field col s3">
+                <div class="btn teal">
+                    <span>Photo</span>
+                    <input type="file" name="steps-__prefix__-photo" accept="image/*" id="id_steps-__prefix__-photo">
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path validate" type="text" placeholder="Upload photo">
+                </div>
+            </div>
+            <div class="col s2 center-align">
+                <a href="#!" class="btn-floating btn-small red remove-step" style="margin-top: 15px;">
+                    <i class="material-icons">remove</i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/recipe_form.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const importBtn = document.getElementById('import-btn');
+    if (importBtn) {
+        importBtn.addEventListener('click', function() {
+            const url = document.getElementById('import-url').value.trim();
+            
+            if (!url) {
+                alert('Please enter a recipe URL');
+                return;
+            }
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Importing...';
+            btn.disabled = true;
+            
+            fetch('/import-recipe/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `url=${encodeURIComponent(url)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ Recipe imported successfully!\n\nTitle: ${data.title}\nIngredients: ${data.ingredients?.length || 0}\nSteps: ${data.steps?.length || 0}`);
+                    
+                    if (data.title) {
+                        document.getElementById('id_title').value = data.title;
+                    }
+                    
+                    // Set source URL
+                    document.getElementById('id_source_url').value = url;
+                    
+                    // Clear existing forms
+                    document.getElementById('ingredient-forms').innerHTML = '';
+                    document.getElementById('step-forms').innerHTML = '';
+                    
+                    // Add ingredients
+                    if (data.ingredients) {
+                        data.ingredients.forEach((ingredient, index) => {
+                            const container = document.getElementById('ingredient-forms');
+                            const emptyForm = document.getElementById('empty-ingredient-form').innerHTML;
+                            const newForm = emptyForm.replace(/__prefix__/g, index);
+                            container.insertAdjacentHTML('beforeend', newForm);
+                            
+                            document.querySelector(`input[name="ingredients-${index}-name"]`).value = ingredient.name;
+                            document.querySelector(`input[name="ingredients-${index}-quantity"]`).value = ingredient.quantity;
+                            document.querySelector(`input[name="ingredients-${index}-unit"]`).value = ingredient.unit;
+                        });
+                        document.getElementById('id_ingredients-TOTAL_FORMS').value = data.ingredients.length;
+                    }
+                    
+                    // Add steps
+                    if (data.steps) {
+                        data.steps.forEach((step, index) => {
+                            const container = document.getElementById('step-forms');
+                            const emptyForm = document.getElementById('empty-step-form').innerHTML;
+                            const newForm = emptyForm.replace(/__prefix__/g, index);
+                            container.insertAdjacentHTML('beforeend', newForm);
+                            
+                            const stepDescription = `Шаг ${step.order}\n\n${step.description}`;
+                            const textarea = document.querySelector(`textarea[name="steps-${index}-description"]`);
+                            textarea.value = stepDescription;
+                            textarea.style.minHeight = '100px';
+                            
+                            // Handle photo if available
+                            if (step.photo_data) {
+                                const stepForm = container.lastElementChild;
+                                
+                                // Convert base64 to blob
+                                const byteCharacters = atob(step.photo_data);
+                                const byteNumbers = new Array(byteCharacters.length);
+                                for (let i = 0; i < byteCharacters.length; i++) {
+                                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                }
+                                const byteArray = new Uint8Array(byteNumbers);
+                                const blob = new Blob([byteArray], {type: 'image/jpeg'});
+                                
+                                const fileName = `step_${step.order}_photo.jpg`;
+                                const file = new File([blob], fileName, {type: 'image/jpeg'});
+                                
+                                const fileInput = stepForm.querySelector(`input[name="steps-${index}-photo"]`);
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                fileInput.files = dataTransfer.files;
+                                
+                                const filePathInput = stepForm.querySelector('.file-path');
+                                if (filePathInput) filePathInput.value = fileName;
+                                
+                                const photoPreview = document.createElement('div');
+                                photoPreview.className = 'photo-preview';
+                                photoPreview.style.marginTop = '10px';
+                                photoPreview.innerHTML = `<img src="${URL.createObjectURL(blob)}" style="max-width: 200px; max-height: 200px;" class="responsive-img"><br><small style="color: green;">✓ Photo attached</small>`;
+                                stepForm.querySelector('.file-field').appendChild(photoPreview);
+                            }
+                            
+                            // Trigger Materialize textarea resize
+                            setTimeout(() => M.textareaAutoResize(textarea), 100);
+                        });
+                        document.getElementById('id_steps-TOTAL_FORMS').value = data.steps.length;
+                    }
+                    
+                    M.updateTextFields();
+                } else {
+                    alert(`❌ Import failed: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                alert(`❌ Import failed: Network error`);
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+    }
+    
+
+});
+</script>
+{% endblock %}

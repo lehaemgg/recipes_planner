@@ -1,0 +1,199 @@
+{% extends 'recipes/base.html' %}
+
+{% block title %}Shopping List - Food Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12">
+        <h4>Shopping List</h4>
+        {% if shopping_items or custom_items %}
+        <div class="center-align" style="margin-bottom: 20px;">
+            <button class="btn-large teal" id="shop-it-btn">
+                <i class="material-icons left">shopping_cart</i>Shop it!
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                {% if shopping_items %}
+                <table class="striped">
+                    <thead>
+                        <tr>
+                            <th>Got it</th>
+                            <th>Ingredient</th>
+                            <th class="right-align">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in shopping_items %}
+                        <tr class="shopping-item" data-item-name="{{ item.name }}">
+                            <td>
+                                <label>
+                                    <input type="checkbox" class="dont-need-checkbox">
+                                    <span></span>
+                                </label>
+                            </td>
+                            <td>{{ item.name }}</td>
+                            <td class="right-align" style="font-size: 1.2em; font-weight: bold;">{{ item.amounts }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <h5 style="margin-top: 30px;">Custom Items</h5>
+                
+                <!-- Add custom item form -->
+                {% csrf_token %}
+                <div class="row">
+                    <div class="input-field col s6">
+                        <input type="text" id="custom-item-name" placeholder="Item name">
+                        <label for="custom-item-name">Item Name</label>
+                    </div>
+                    <div class="input-field col s4">
+                        <input type="text" id="custom-item-amount" placeholder="Amount (optional)">
+                        <label for="custom-item-amount">Amount</label>
+                    </div>
+                    <div class="col s2">
+                        <button class="btn teal" id="add-custom-item-btn" style="margin-top: 15px;">
+                            <i class="material-icons">add</i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Custom items table -->
+                {% if custom_items %}
+                <table class="striped">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="right-align">Amount</th>
+                            <th class="center-align">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in custom_items %}
+                        <tr class="custom-item" data-item-id="{{ item.pk }}">
+                            <td>{{ item.name }}</td>
+                            <td class="right-align" style="font-size: 1.2em; font-weight: bold;">{{ item.amount|default:"-" }}</td>
+                            <td class="center-align">
+                                <a href="#" class="btn-floating btn-small red delete-custom-item" data-item-id="{{ item.pk }}">
+                                    <i class="material-icons">delete</i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="grey-text">No custom items added yet.</p>
+                {% endif %}
+                
+                <script>
+                // Handle recipe ingredients checkboxes
+                document.querySelectorAll('.dont-need-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const listItem = this.closest('.shopping-item');
+                        if (this.checked) {
+                            listItem.style.backgroundColor = '#f5f5f5';
+                            listItem.style.color = '#999';
+                            listItem.style.textDecoration = 'line-through';
+                        } else {
+                            listItem.style.backgroundColor = '';
+                            listItem.style.color = '';
+                            listItem.style.textDecoration = '';
+                        }
+                    });
+                });
+                
+                // Add custom item
+                document.getElementById('add-custom-item-btn').addEventListener('click', function() {
+                    const name = document.getElementById('custom-item-name').value.trim();
+                    const amount = document.getElementById('custom-item-amount').value.trim();
+                    
+                    if (!name) {
+                        alert('Please enter item name');
+                        return;
+                    }
+                    
+                    fetch('/add-custom-item/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: `name=${encodeURIComponent(name)}&amount=${encodeURIComponent(amount)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error adding item');
+                        }
+                    });
+                });
+                
+                
+                // Delete custom item
+                document.querySelectorAll('.delete-custom-item').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const itemId = this.dataset.itemId;
+                        
+                        if (confirm('Delete this item?')) {
+                            fetch('/delete-custom-item/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                },
+                                body: `item_id=${itemId}`
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    location.reload();
+                                } else {
+                                    alert('Error deleting item');
+                                }
+                            });
+                        }
+                    });
+                });
+                
+                // Shop it button
+                document.getElementById('shop-it-btn')?.addEventListener('click', function() {
+                    fetch('/start-shopping/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+                });
+                </script>
+                {% else %}
+                <div class="center-align">
+                    <h5 class="grey-text">Your shopping list is empty</h5>
+                    <p>Add recipes from your calendar to build your shopping list.</p>
+                    <a href="{% url 'calendar' %}" class="btn teal">
+                        <i class="material-icons left">calendar_today</i>Go to Calendar
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
