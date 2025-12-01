@@ -175,6 +175,9 @@ def scrape_menunedeli_recipe(url):
                                 
                                 # Resize image before encoding
                                 img = Image.open(BytesIO(img_response.content))
+                                # Convert RGBA to RGB for JPEG
+                                if img.mode == 'RGBA':
+                                    img = img.convert('RGB')
                                 if img.height > 800 or img.width > 800:
                                     img.thumbnail((800, 800), Image.Resampling.LANCZOS)
                                 

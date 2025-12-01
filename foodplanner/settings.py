@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-zg%yd3r%xnn3ky7x8y0@ow+c20=%tg=lg+--e&l-w3ba&y-twi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['lehaem.eu.pythonanywhere.com', 'localhost', '127.0.0.1']
 
@@ -120,7 +120,10 @@ STATIC_ROOT = '/home/lehaem/recipes_planner/static'
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/lehaem/recipes_planner/media'
+if DEBUG:
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    MEDIA_ROOT = '/home/lehaem/recipes_planner/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
