@@ -28,6 +28,14 @@
         <div class="nav-wrapper container">
             <a href="{% url 'calendar' %}" class="brand-logo">Food Planner</a>
             <a href="#" data-target="side-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="{% url 'calendar' %}"><i class="material-icons left">calendar_today</i>Calendar</a></li>
+                <li><a href="{% url 'recipe_list' %}"><i class="material-icons left">restaurant</i>Recipes</a></li>
+                <li><a href="{% url 'shopping_list' %}"><i class="material-icons left">shopping_cart</i>Shopping List</a></li>
+                <li><a href="{% url 'shopping_tab' %}"><i class="material-icons left">shopping_basket</i>Shopping</a></li>
+                <li><a href="{% url 'shopping_history' %}"><i class="material-icons left">history</i>History</a></li>
+                <li><a href="{% url 'recipe_create' %}"><i class="material-icons left">add</i>Add Recipe</a></li>
+            </ul>
         </div>
     </nav>
     
@@ -79,10 +87,7 @@
                 }
             });
             
-            // Auto-open on desktop
-            if (window.innerWidth > 992) {
-                instances[0].open();
-            }
+            // Sidenav is now only for mobile/tablet
         });
     </script>
 </body>
