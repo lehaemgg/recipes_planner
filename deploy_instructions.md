@@ -6,7 +6,7 @@
 
 ## 2. Install Requirements
 ```bash
-pip3.10 install --user -r requirements.txt
+pip3.11 install --user -r requirements.txt
 ```
 
 ## 3. Update Settings
@@ -18,12 +18,12 @@ pip3.10 install --user -r requirements.txt
 
 ## 4. Run Migrations
 ```bash
-python3.10 manage.py migrate
+python3.11 manage.py migrate
 ```
 
 ## 5. Collect Static Files
 ```bash
-python3.10 manage.py collectstatic --noinput
+python3.11 manage.py collectstatic --noinput
 ```
 
 ## 6. Configure Web App
