@@ -13,3 +13,4 @@ venv/
 dist/
 build/
 export_recipe.py
+db.sqlite3
