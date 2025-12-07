@@ -29,4 +29,5 @@ urlpatterns = [
     path('shopping-history/', views.shopping_history, name='shopping_history'),
     path('shopping-history/<int:pk>/', views.shopping_history_detail, name='shopping_history_detail'),
     path('back-to-list/', views.back_to_list, name='back_to_list'),
+    path('import-recipe-file/', views.import_recipe_file, name='import_recipe_file'),
 ]

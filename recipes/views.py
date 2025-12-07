@@ -1,9 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
+from django.core.files.base import ContentFile
 from .models import Recipe, Ingredient, Step, MealPlan, ShoppingListItem, CustomShoppingItem, ActiveShoppingItem, ShoppingHistory
 from .forms import RecipeForm, IngredientFormSet, StepFormSet
 import sys
 import os
+import json
+import base64
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from recipe_scraper import scrape_menunedeli_recipe
 
@@ -523,3 +526,49 @@ def back_to_list(request):
         return JsonResponse({'success': True})
     
     return JsonResponse({'success': False})
+
+def import_recipe_file(request):
+    """Import recipe from JSON file"""
+    if request.method == 'POST' and request.FILES.get('recipe_file'):
+        try:
+            file = request.FILES['recipe_file']
+            data = json.loads(file.read().decode('utf-8'))
+            
+            # Check if recipe already exists
+            if data.get('source_url') and Recipe.objects.filter(source_url=data['source_url']).exists():
+                return JsonResponse({'success': False, 'error': 'Recipe already exists'})
+            
+            # Create recipe
+            recipe = Recipe.objects.create(
+                title=data['title'],
+                source_url=data.get('source_url', '')
+            )
+            
+            # Create ingredients
+            for ing in data['ingredients']:
+                Ingredient.objects.create(
+                    recipe=recipe,
+                    name=ing['name'],
+                    quantity=ing['quantity'],
+                    unit=ing['unit'],
+                    no_need_to_buy=ing.get('no_need_to_buy', False)
+                )
+            
+            # Create steps
+            for step_data in data['steps']:
+                step = Step.objects.create(
+                    recipe=recipe,
+                    order=step_data['order'],
+                    description=step_data['description']
+                )
+                
+                if 'photo' in step_data:
+                    image_data = base64.b64decode(step_data['photo'])
+                    image_file = ContentFile(image_data, name=f'step_{step_data["order"]}_photo.jpg')
+                    step.photo.save(f'step_{step_data["order"]}_photo.jpg', image_file, save=True)
+            
+            return JsonResponse({'success': True, 'recipe_id': recipe.pk})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'No file provided'})
