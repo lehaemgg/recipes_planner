@@ -12,3 +12,4 @@ venv/
 *.exe
 dist/
 build/
+export_recipe.py
